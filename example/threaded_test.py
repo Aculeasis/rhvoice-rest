@@ -1,71 +1,55 @@
 #!/usr/bin/env python3
 
-import threading
-import requests
-import urllib3
-import time
+import asyncio
 import sys
+import time
+
+import aiohttp
 
 
-class Worker(threading.Thread):
-    BUFF_SIZE = 1024
-
-    def __init__(self, url=None, voice=None, text=None, format_=None):
-        super().__init__()
-        self.__params = {
-            'voice': voice or 'spomenka',
-            'text': text or 'Kaj mi ankaŭ parolas Esperanton',
-            'format': format_ or 'wav',
-        }
-        self._url = url or 'http://127.0.0.1:8080/say'
-        self._size = 0
-        self._time = 0
-        self.start()
-
-    def run(self):
-        self._time = time.perf_counter()
-        try:
-            rq = requests.get(self._url, params=self.__params, stream=True, timeout=300)
-        except (
-                requests.exceptions.HTTPError,
-                requests.exceptions.RequestException,
-                urllib3.exceptions.NewConnectionError
-        ) as e:
-            print(e)
-        else:
-            if not rq.ok:
-                print('Error {}:{}'.format(rq.status_code, rq.reason))
-            else:
-                for chunk in rq.iter_content(chunk_size=self.BUFF_SIZE):
-                    self._size += len(chunk)
-        self._time = time.perf_counter() - self._time
-
-    @property
-    def size(self):
-        return self._size
-
-    @property
-    def time(self):
-        return self._time
+async def request(url, params):
+    buff_size = 1024
+    start_time = time.perf_counter()
+    size = 0
+    session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=300))
+    try:
+        async with await session.request('GET', url, params=params) as rq:
+            if rq.status != 200:
+                raise RuntimeError('{}: {}'.format(rq.status, rq.reason))
+            chunk = await rq.content.read(buff_size)
+            while chunk:
+                size += len(chunk)
+                chunk = await rq.content.read(buff_size)
+    except (aiohttp.client_exceptions.ClientConnectorError, RuntimeError, asyncio.TimeoutError) as e:
+        print(e)
+    finally:
+        await session.close()
+    return size, time.perf_counter() - start_time
 
 
 def test(count):
-    text = 'Внимание! Включён режим разработчика. Для возврата в обычный режим скажите \'выход\''
-    voice = 'anna'
+    params = {
+        'text': 'Внимание! Включён режим разработчика. Для возврата в обычный режим скажите \'выход\'',
+        'voice': 'anna',
+        'format': 'wav'
+    }
+    url = 'http://127.0.0.1:8080/say'
     time.sleep(0.1)
     w_time = time.perf_counter()
-    workers = [Worker(text=text, voice=voice) for _ in range(count)]
-    _ = [x.join() for x in workers]
+
+    loop = asyncio.get_event_loop()
+    tasks = [request(url, params) for _ in range(count)]
+    workers = loop.run_until_complete(asyncio.gather(*tasks))
+
     w_time = time.perf_counter() - w_time
     avg_time = w_time / count
 
-    sizes = [x.size for x in workers]
-    size = sizes[0]
-    for test_size in sizes:
-        assert size == test_size
+    size = workers[0][0]
+    for test_size in workers:
+        assert size == test_size[0]
+        assert test_size[0]
 
-    times = [x.time for x in workers]
-    real_w_time = sum(times)
+    real_w_time = sum([x[1] for x in workers])
     real_avg_time = real_w_time / count
     return count, w_time, avg_time, real_w_time, real_avg_time, size
 
