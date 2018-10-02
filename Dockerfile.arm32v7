@@ -3,7 +3,7 @@ FROM arm32v7/ubuntu:bionic
 
 ARG RUNTIME_PACKAGES="lame python3 locales opus-tools"
 ARG BUILD_PACKAGES="git scons build-essential python3-pip python3-setuptools"
-ARG PIP_PACKAGE="flask pymorphy2"
+ARG PIP_PACKAGE="aiohttp pymorphy2"
 
 RUN apt-get update -y && \
     apt-get -y install --no-install-recommends $RUNTIME_PACKAGES && \

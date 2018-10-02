@@ -3,7 +3,7 @@
 from shlex import quote
 from urllib import parse
 
-from flask import Flask, request, make_response, Response, stream_with_context
+from aiohttp import web
 
 from rhvoice_proxy.rhvoice import TTS
 from tools.preprocessing.text_prepare import text_prepare
@@ -22,29 +22,35 @@ DEFAULT_VOICE = 'anna'
 FORMATS = {'wav': 'audio/wav', 'mp3': 'audio/mpeg', 'opus': 'audio/ogg'}
 DEFAULT_FORMAT = 'mp3'
 
-app = Flask(__name__, static_url_path='')
 
+async def say(request):
+    print(request)
+    text = ' '.join([x for x in parse.unquote(request.rel_url.query.get('text', '')).splitlines() if x])
+    voice = request.rel_url.query.get('voice', DEFAULT_VOICE)
+    format_ = request.rel_url.query.get('format', DEFAULT_FORMAT)
 
-@app.route('/say')
-def say():
-    def stream_():
-        with tts.say(text, voice, format_) as read:
-            for chunk in read:
-                yield chunk
-
-    text = ' '.join([x for x in parse.unquote(request.args.get('text', '')).splitlines() if x])
-    voice = request.args.get('voice', DEFAULT_VOICE)
-    format_ = request.args.get('format', DEFAULT_FORMAT)
-
+    err = None
     if voice not in SUPPORT_VOICES:
-        return make_response('Unknown voice: \'{}\'. Support: {}.'.format(voice, ', '.join(SUPPORT_VOICES)), 400)
-    if format_ not in FORMATS:
-        return make_response('Unknown format: \'{}\'. Support: {}.'.format(format_, ', '.join(FORMATS)), 400)
-    if not text:
-        return make_response('Unset \'text\'.', 400)
+        err = 'Unknown voice: \'{}\'. Support: {}.'.format(voice, ', '.join(SUPPORT_VOICES))
+    elif format_ not in FORMATS:
+        err = 'Unknown format: \'{}\'. Support: {}.'.format(format_, ', '.join(FORMATS))
+    elif not text:
+        err = 'Unset \'text\'.'
+    if err:
+        raise web.HTTPBadRequest(text=err)
 
     text = quote(text_prepare(text))
-    return Response(stream_with_context(stream_()), mimetype=FORMATS[format_])
+    response = web.StreamResponse()
+    response.content_type = FORMATS[format_]
+    await response.prepare(request)
+    try:
+        with tts.say(text, voice, format_) as read:
+            for chunk in read:
+                await response.write(chunk)
+    except ConnectionResetError as e:
+        print(e)
+    else:
+        return response
 
 
 def _get_def(any_, test):
@@ -64,5 +70,8 @@ if __name__ == "__main__":
     DEFAULT_VOICE = _get_def(SUPPORT_VOICES, DEFAULT_VOICE)
     SUPPORT_VOICES = set(SUPPORT_VOICES)
 
-    app.run(host='0.0.0.0', port=8080, threaded=tts.thread_count > 1)
+    app = web.Application()
+    app.add_routes([web.get('/say', say)])
+    web.run_app(app, host='0.0.0.0', port=8080)
+
     tts.join()
