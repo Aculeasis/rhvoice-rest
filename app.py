@@ -6,8 +6,8 @@ from shlex import quote
 from urllib import parse
 
 from aiohttp import web
+from rhvoice_wrapper import TTS
 
-from rhvoice_proxy.rhvoice import TTS
 from tools.preprocessing.text_prepare import text_prepare
 
 SUPPORT_VOICES = {
