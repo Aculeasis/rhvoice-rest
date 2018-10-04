@@ -1,0 +1,16 @@
+language:
+  python
+python:
+  '3.6'
+sudo:
+  true
+before_install:
+  - sudo cp example/threaded_test.py /opt/test.py
+  - sudo ./install.sh
+install:
+  true
+before_script:
+  - sleep 6
+script:
+  - sudo python -u /opt/test.py
+  - sudo systemctl stop rhvoice-rest.service
