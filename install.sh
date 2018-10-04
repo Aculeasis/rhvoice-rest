@@ -13,7 +13,7 @@ BUILD_PACKAGES="git scons build-essential libao-dev pkg-config flite1-dev portau
 apt-get update -y
 apt-get -y install --no-install-recommends ${RUNTIME_PACKAGES} ${BUILD_PACKAGES}
 sudo -H python3 -m pip install --upgrade pip setuptools wheel
-sudo -H pip3 install aiohttp pymorphy2 rhvoice-wrapper
+sudo -H python3 -m pip install aiohttp pymorphy2 rhvoice-wrapper
 
 mkdir -p /opt/rhvoice_proxy
 cp app.py /opt/rhvoice-rest.py
