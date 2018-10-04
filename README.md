@@ -2,7 +2,7 @@ rhvoice-rest
 ============
 [![Docker Pulls](https://img.shields.io/docker/pulls/aculeasis/rhvoice-rest.svg)](https://hub.docker.com/r/aculeasis/rhvoice-rest/) [![Build Status](https://travis-ci.org/Aculeasis/rhvoice-rest.svg?branch=aiohttp)](https://travis-ci.org/Aculeasis/rhvoice-rest)
 
-Это проект на основе синтезатора речи [RHVoice](https://github.com/Olga-Yakovleva/RHVoice)
+Это веб-сервис на основе aiohttp и синтезатора речи [RHVoice](https://github.com/Olga-Yakovleva/RHVoice). Благодаря REST API его легко интегрировать в качестве TTS-провайдера.
 
 ## Установка
 ### Быстрый старт
