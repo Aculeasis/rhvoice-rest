@@ -18,8 +18,6 @@ rhvoice-rest
 - armv7l `docker run -d -p 8080:8080 aculeasis/rhvoice-rest:arm32v7`
 - x86_64 `docker run -d -p 8080:8080 aculeasis/rhvoice-rest:amd64`
 
-Чтобы не терять настройки при обновленях, нужно вынести на хост (через -v): `/opt/cfg`
-
 ### Сборка и запуск докера
     git clone https://github.com/Aculeasis/rhvoice-rest
     cd rhvoice-rest
