@@ -1,6 +1,6 @@
-rhvoice-rest
+rhvoice-rest 
 ============
-[![Docker Pulls](https://img.shields.io/docker/pulls/aculeasis/rhvoice-rest.svg)](https://hub.docker.com/r/aculeasis/rhvoice-rest/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/aculeasis/rhvoice-rest.svg)](https://hub.docker.com/r/aculeasis/rhvoice-rest/) [![Build Status](https://travis-ci.org/Aculeasis/rhvoice-rest.svg?branch=aiohttp)](https://travis-ci.org/Aculeasis/rhvoice-rest)
 
 Это проект на основе синтезатора речи [RHVoice](https://github.com/Olga-Yakovleva/RHVoice)
 
