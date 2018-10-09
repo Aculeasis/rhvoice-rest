@@ -54,10 +54,12 @@ def test(count):
     return count, w_time, avg_time, real_w_time, real_avg_time, size
 
 
-def print_result(count, w_time, avg_time, real_w_time, real_avg_time, size, boost):
+def print_result(count, w_time, avg_time, real_w_time, real_avg_time, size, one):
+    boost = one / avg_time
     print('Threads: {}'.format(count))
-    print('Work time: {:.4f}, avg: {:.4f}'.format(w_time, avg_time))
     print('In thread work time: {:.4f}, avg: {:.4f}'.format(real_w_time, real_avg_time))
+    print('Work time: {:.4f}, avg: {:.4f}'.format(w_time, avg_time))
+    print('Single thread time: {:.4f}'.format(one))
     print('Boost: x {:.4f}'.format(boost))
     print('Data size: {}'.format(size))
 
@@ -67,6 +69,6 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         threads = int(sys.argv[1])
     test(threads)  # Прогрев
-    one = test(1)[2]  # Время одного потока
+    single = test(1)  # Время одного потока
     oll = test(threads)
-    print_result(*oll, one / oll[2])
+    print_result(*oll, single[1])
