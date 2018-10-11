@@ -6,7 +6,7 @@ trap cleanup INT TERM
 cleanup() {
     echo 'stopping...'
     APP="$(pgrep 'python' -a | grep 'app.py' | awk '{print $1}')"
-    kill -TERM "$APP"
+    echo "$APP" | xargs kill -TERM
     wait
     echo "stop"
     exit 0

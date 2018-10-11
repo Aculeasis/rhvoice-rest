@@ -33,6 +33,6 @@ script:
   - python -u example/threaded_test.py
 
 after_script:
-  - docker logs rhvoice-rest
   - docker stop rhvoice-rest
+  - docker logs rhvoice-rest
   - docker ps -a
