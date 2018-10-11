@@ -1,4 +1,4 @@
-rhvoice-rest 
+[rhvoice-rest](https://github.com/Aculeasis/rhvoice-rest/tree/aiohttp)
 ============
 [![Docker Pulls](https://img.shields.io/docker/pulls/aculeasis/rhvoice-rest.svg)](https://hub.docker.com/r/aculeasis/rhvoice-rest/) [![Build Status](https://travis-ci.org/Aculeasis/rhvoice-rest.svg?branch=aiohttp)](https://travis-ci.org/Aculeasis/rhvoice-rest)
 
@@ -60,15 +60,24 @@ rhvoice-rest
              anatol|natalia # Ukrainian
              >
     & format=<wav|mp3|opus>
+    & rate=0..100
+    & pitch=0..100
+    & volume=0..100
 `SERVER` - Адрес и порт rhvoice-rest. При дефолтной установке на локалхост будет `localhost:8080`.
 Конечно, вы можете установить сервер rhvoice-rest на одной машине а клиент на другой. Особенно актуально для слабых одноплатников. 
 
 `text` - URL-encoded строка. Обязательный параметр.
 
-`voice` - голос из RHVoice [полный список](https://github.com/Olga-Yakovleva/RHVoice/wiki/Latest-version-%28Russian%29).
-`anna` используется если не задано и в качестве альтернативного спикера.
+`voice` - Голос из RHVoice [полный список](https://github.com/Olga-Yakovleva/RHVoice/wiki/Latest-version-%28Russian%29).
+`anna` используется по умолчанию и в качестве альтернативного спикера.
 
-`format` - Формат возвращаемого файла. Если не задано вернет `mp3`.
+`format` - Формат возвращаемого файла. По умолчанию `mp3`.
+
+`rate` - Темп речи. По умолчанию `50`.
+
+`pitch` - Высота голоса. По умолчанию `50`.
+
+`volume` - Громкость голоса. По умолчанию `50`.
 
 ## Проверка
 <http://localhost:8080/say?text=Привет>

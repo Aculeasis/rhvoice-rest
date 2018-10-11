@@ -2,8 +2,8 @@
 FROM arm32v7/ubuntu:bionic
 
 ARG RUNTIME_PACKAGES="lame python3 locales opus-tools"
-ARG BUILD_PACKAGES="git scons build-essential python3-pip python3-setuptools"
-ARG PIP_PACKAGE="aiohttp pymorphy2 rhvoice-wrapper"
+ARG BUILD_PACKAGES="git scons build-essential python3-pip python3-setuptools python3-wheel"
+ARG PIP_PACKAGE="aiohttp pymorphy2 rhvoice-wrapper rhvoice-wrapper-bin"
 
 RUN apt-get update -y && \
     apt-get -y install --no-install-recommends $RUNTIME_PACKAGES && \
@@ -12,19 +12,18 @@ RUN apt-get update -y && \
     cd /usr/share/locale/ && ls | grep -v 'ru\|en\|locale.alias' | xargs rm -rf && \
     locale-gen ru_RU.UTF-8 && \
     pip3 install $PIP_PACKAGE && \
-    git clone https://github.com/Olga-Yakovleva/RHVoice.git /opt/RHVoice && \
-    cd /opt/RHVoice && git checkout dc36179 && scons && scons install && ldconfig && \
     git clone https://github.com/vantu5z/RHVoice-dictionary.git /opt/RHVoice-dictionary && \
-    mkdir -p /usr/local/etc/RHVoice/dicts/Russian/ && mkdir -p /opt/data && \
+    mkdir -p /usr/local/etc/RHVoice/dicts/Russian/ && \
     cp /opt/RHVoice-dictionary/*.txt /usr/local/etc/RHVoice/dicts/Russian/ && \
     cp -R /opt/RHVoice-dictionary/tools /opt/ && \
     cd /opt && mkdir /opt/cfg && \
+    echo "$(pip3 show rhvoice-wrapper-bin | grep Location | awk '{print $2}')/rhvoice_wrapper_bin/lib/" > /opt/LIBRARY_PATH && \
     apt-get remove --purge -y $BUILD_PACKAGES $(apt-mark showauto) && \
     apt-get autoremove -y && \
     apt-get -y install --no-install-recommends $RUNTIME_PACKAGES && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp /usr/share/doc/* /usr/share/info/* \
-    /usr/lib/python3.6/test /root/.cache/* /opt/RHVoice /opt/RHVoice-dictionary
+    /usr/lib/python*/test /root/.cache/* /opt/RHVoice-dictionary
 
 ENV LC_ALL ru_RU.UTF-8
 ENV LANG ru_RU.UTF-8

@@ -19,8 +19,14 @@ if [ -f /usr/local/etc/RHVoice/RHVoice.conf ] && [ ! -L /usr/local/etc/RHVoice/R
     ln -fs /opt/cfg/RHVoice.conf /usr/local/etc/RHVoice/RHVoice.conf
 fi
 
+if [ -f /opt/LIBRARY_PATH ]; then
+    LIBRARY_PATH=$(head -1 /opt/LIBRARY_PATH)
+    echo "Set LD_LIBRARY_PATH=$LIBRARY_PATH"
+    export LD_LIBRARY_PATH="$LIBRARY_PATH"
+fi
+
 if [ -f /opt/app.py ]; then
-    python3 /opt/app.py &
+    python3 -u /opt/app.py &
 fi
 
 wait

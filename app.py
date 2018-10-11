@@ -10,15 +10,6 @@ from rhvoice_wrapper import TTS
 
 from tools.preprocessing.text_prepare import text_prepare
 
-SUPPORT_VOICES = {
-    'aleksandr', 'anna', 'elena', 'irina',  # Russian
-    'alan', 'bdl', 'clb', 'slt',  # English
-    'spomenka',  # Esperanto
-    'natia',  # Georgian
-    'azamat', 'nazgul',  # Kyrgyz
-    'talgat',  # Tatar
-    'anatol', 'natalia'  # Ukrainian
-}
 DEFAULT_VOICE = 'anna'
 
 FORMATS = {'wav': 'audio/wav', 'mp3': 'audio/mpeg', 'opus': 'audio/ogg'}
@@ -40,17 +31,18 @@ async def say(request):
     if err:
         raise web.HTTPBadRequest(text=err)
 
+    sets = _get_sets(request.rel_url.query)
     text = quote(text_prepare(text))
     response = web.StreamResponse()
     response.content_type = FORMATS[format_]
     await response.prepare(request)
     try:
         if tts.process:
-            with AsyncAdapter(tts.say, text, voice, format_) as read:
+            with AsyncAdapter(tts.say, text, voice, format_, 1024, sets or None) as read:
                 async for chunk in read:
                     await response.write(chunk)
         else:
-            with tts.say(text, voice, format_) as read:
+            with tts.say(text, voice, format_, sets=sets or None) as read:
                 for chunk in read:
                     await response.write(chunk)
     except ConnectionResetError as e:
@@ -103,6 +95,18 @@ class AsyncAdapter(threading.Thread):
         finally:
             self._buff = None
             self._wait.set()
+
+
+def _normalize_set(val):  # 0..100 -> -1.0..1
+    try:
+        return max(0, min(100, int(val)))/50.0-1
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _get_sets(args):
+    keys = {'rate': 'absolute_rate', 'pitch': 'absolute_pitch', 'volume': 'absolute_volume'}
+    return {keys[key]: _normalize_set(args[key]) for key in keys if key in args}
 
 
 def _get_def(any_, test):
